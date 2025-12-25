@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lantern"
+version = "0.1.0"
+description = "A minimal local RAG assistant scaffold"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Lantern" }]
+dependencies = [
+  "chromadb==0.5.5",
+  "openai==1.40.2",
+  "httpx>=0.25.0",
+  "python-dotenv==1.0.1",
+  "sentence-transformers==2.7.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["lantern"]
+
