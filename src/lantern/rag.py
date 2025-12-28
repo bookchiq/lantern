@@ -36,11 +36,11 @@ def build_prompt(query: str, hits: List[Dict[str, Any]]) -> str:
 
     context_block = "\n\n".join(context_lines)
     return (
-        "You are a helpful assistant. Use the provided context to answer the question. "
+        "You are a helpful assistant. Use ONLY the provided context to answer the question. "
         "If the answer is not in the context, say you don't know.\n\n"
-        f"Question: {query}\n\n"
         f"Context:\n{context_block}\n\n"
-        "Answer with a short response and include citations like [1]."
+        f"Question: {query}\n\n"
+        "Answer in a short response and include citations like [1]."
     )
 
 
@@ -49,6 +49,9 @@ def answer_question(query: str, config: Config, top_k: int = 6) -> str:
     hits = retrieve(query, embedder, config, top_k=top_k)
     prompt = build_prompt(query, hits)
     response = generate_answer(prompt, config)
+
+    if not hits:
+        return "I don't know yet - I don't have any ingested context to answer from.\n\nSources:\n(none)"
 
     sources = []
     for idx, hit in enumerate(hits, start=1):

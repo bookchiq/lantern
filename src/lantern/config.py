@@ -14,6 +14,7 @@ class Config:
     llm_model: str
     embed_model: str
     chroma_dir: str
+    llm_system_prompt: str
 
 
 def _get_env(name: str, default: str | None = None) -> str | None:
@@ -31,6 +32,11 @@ def load_config() -> Config:
     llm_model = _get_env("LANTERN_LLM_MODEL", "gpt-4o-mini")
     embed_model = _get_env("LANTERN_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
     chroma_dir = _get_env("LANTERN_CHROMA_DIR", "./data/chroma")
+    llm_system_prompt: str = (
+        "You are a concise assistant. Use the provided context to answer the question. "
+        "If the answer is not in the context, say you are unsure."
+)
+
 
     if chroma_dir is not None:
         chroma_dir = str(Path(chroma_dir))
@@ -41,5 +47,6 @@ def load_config() -> Config:
         llm_model=llm_model or "gpt-4o-mini",
         embed_model=embed_model or "sentence-transformers/all-MiniLM-L6-v2",
         chroma_dir=chroma_dir or "./data/chroma",
+        llm_system_prompt=llm_system_prompt,
     )
 
