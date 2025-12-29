@@ -12,7 +12,7 @@ class Embeddings:
 
     def _load(self) -> SentenceTransformer:
         if self._model is None:
-            self._model = SentenceTransformer(self.model_name)
+            self._model = SentenceTransformer(self.model_name, device="cpu")
         return self._model
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:

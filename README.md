@@ -34,5 +34,19 @@ python scripts/ask.py "What is this project?"
 
 If no LLM endpoint is configured, the app will still run and will print a helpful configuration message.
 
-## Next: Asana loader
-To add an Asana loader later, create `src/lantern/loaders/asana.py` with a function that yields `Document` objects from Asana tasks. Then call it from `ingest.py` or a new script to feed those documents into the same chunking + vectorstore pipeline.
+## Ingest Asana tasks
+Set these env vars in `.env`:
+- `LANTERN_ASANA_PAT` (personal access token)
+- `LANTERN_ASANA_WORKSPACE_GID`
+- One of: `LANTERN_ASANA_PROJECT_GID` or `LANTERN_ASANA_USER_GID`
+- Optional: `LANTERN_ASANA_LIMIT` (default 200)
+
+Then run:
+```bash
+python scripts/ingest_asana.py
+```
+
+Optional: limit ingestion to the first N tasks:
+```bash
+python scripts/ingest_asana.py --top-n 50
+```

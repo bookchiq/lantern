@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List
+from datetime import date
 
 from .config import Config
 from .embeddings import Embeddings
 from .vectorstore import get_collection, query_collection
 from .llm import generate_answer
+
 
 
 def retrieve(
@@ -44,7 +46,28 @@ def build_prompt(query: str, hits: List[Dict[str, Any]]) -> str:
     )
 
 
+def _is_overdue(hit: Dict[str, Any], today: date) -> bool:
+    md = hit.get("metadata", {}) or {}
+    if md.get("source_type") != "asana":
+        return False
+
+    if md.get("completed") is True:
+        return False
+
+    due_on = md.get("due_on")
+    if not due_on:
+        return False
+
+    try:
+        due_date = date.fromisoformat(str(due_on))
+    except ValueError:
+        return False
+
+    return due_date < today
+
+
 def answer_question(query: str, config: Config, top_k: int = 6) -> str:
+    today = date.today()
     embedder = Embeddings(config.embed_model)
     hits = retrieve(query, embedder, config, top_k=top_k)
     prompt = build_prompt(query, hits)
@@ -52,6 +75,9 @@ def answer_question(query: str, config: Config, top_k: int = 6) -> str:
 
     if not hits:
         return "I don't know yet - I don't have any ingested context to answer from.\n\nSources:\n(none)"
+    
+    if "overdue" in query.lower():
+        hits = [h for h in hits if _is_overdue(h, today)]
 
     sources = []
     for idx, hit in enumerate(hits, start=1):

@@ -15,6 +15,11 @@ class Config:
     embed_model: str
     chroma_dir: str
     llm_system_prompt: str
+    asana_pat: str | None
+    asana_workspace_gid: str | None
+    asana_project_gid: str | None
+    asana_user_gid: str | None
+    asana_limit: int
 
 
 def _get_env(name: str, default: str | None = None) -> str | None:
@@ -22,6 +27,16 @@ def _get_env(name: str, default: str | None = None) -> str | None:
     if value is None or value.strip() == "":
         return default
     return value
+
+
+def _get_env_int(name: str, default: int) -> int:
+    value = _get_env(name)
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise ValueError(f"Invalid integer for {name}: {value}") from exc
 
 
 def load_config() -> Config:
@@ -32,10 +47,16 @@ def load_config() -> Config:
     llm_model = _get_env("LANTERN_LLM_MODEL", "gpt-4o-mini")
     embed_model = _get_env("LANTERN_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
     chroma_dir = _get_env("LANTERN_CHROMA_DIR", "./data/chroma")
-    llm_system_prompt: str = (
+    llm_system_prompt = (
         "You are a concise assistant. Use the provided context to answer the question. "
         "If the answer is not in the context, say you are unsure."
-)
+    )
+
+    asana_pat = _get_env("LANTERN_ASANA_PAT")
+    asana_workspace_gid = _get_env("LANTERN_ASANA_WORKSPACE_GID")
+    asana_project_gid = _get_env("LANTERN_ASANA_PROJECT_GID")
+    asana_user_gid = _get_env("LANTERN_ASANA_USER_GID")
+    asana_limit = _get_env_int("LANTERN_ASANA_LIMIT", 200)
 
 
     if chroma_dir is not None:
@@ -48,5 +69,9 @@ def load_config() -> Config:
         embed_model=embed_model or "sentence-transformers/all-MiniLM-L6-v2",
         chroma_dir=chroma_dir or "./data/chroma",
         llm_system_prompt=llm_system_prompt,
+        asana_pat=asana_pat,
+        asana_workspace_gid=asana_workspace_gid,
+        asana_project_gid=asana_project_gid,
+        asana_user_gid=asana_user_gid,
+        asana_limit=asana_limit,
     )
-

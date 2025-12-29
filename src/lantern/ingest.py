@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from datetime import datetime
 from hashlib import sha1
 from pathlib import Path
@@ -13,6 +15,41 @@ from .vectorstore import get_collection, upsert_documents
 
 
 SUPPORTED_EXTENSIONS = {".txt", ".md"}
+
+
+def sanitize_metadata(metadata: dict) -> dict:
+    """Sanitize metadata for Chroma.
+
+    Chroma metadata values must be str, int, float, or bool. This function:
+    - drops keys with None values
+    - coerces lists/tuples/sets into comma-joined strings
+    - coerces dicts/other objects into JSON or string representations
+    """
+    clean: dict = {}
+
+    for key, value in (metadata or {}).items():
+        if value is None:
+            continue
+
+        if isinstance(value, (str, int, float, bool)):
+            clean[key] = value
+            continue
+
+        if isinstance(value, (list, tuple, set)):
+            parts = [str(v) for v in value if v is not None]
+            clean[key] = ", ".join(parts)
+            continue
+
+        if isinstance(value, dict):
+            try:
+                clean[key] = json.dumps(value, ensure_ascii=False, sort_keys=True)
+            except Exception:
+                clean[key] = str(value)
+            continue
+
+        clean[key] = str(value)
+
+    return clean
 
 
 def load_documents_from_folder(path: Path) -> List[Document]:
@@ -71,7 +108,7 @@ def ingest_documents(
 
             ids.append(chunk_id)
             texts.append(chunk)
-            metadatas.append(metadata)
+            metadatas.append(sanitize_metadata(metadata))
             total_chunks += 1
 
             if len(ids) >= batch_size:
