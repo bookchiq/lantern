@@ -11,7 +11,10 @@ COLLECTION_NAME = "lantern_docs"
 
 def get_collection(chroma_dir: str):
     Path(chroma_dir).mkdir(parents=True, exist_ok=True)
-    client = chromadb.PersistentClient(path=chroma_dir)
+    client = chromadb.PersistentClient(
+        path=chroma_dir,
+        settings=chromadb.Settings(anonymized_telemetry=False)
+    )
     return client.get_or_create_collection(name=COLLECTION_NAME)
 
 
