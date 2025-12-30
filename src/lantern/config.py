@@ -20,6 +20,7 @@ class Config:
     asana_project_gid: str | None
     asana_user_gid: str | None
     asana_limit: int
+    asana_completed_lookback_days: int
 
 
 def _get_env(name: str, default: str | None = None) -> str | None:
@@ -37,6 +38,12 @@ def _get_env_int(name: str, default: int) -> int:
         return int(value)
     except ValueError as exc:
         raise ValueError(f"Invalid integer for {name}: {value}") from exc
+
+
+def _split_csv(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [v.strip() for v in value.split(",") if v.strip()]
 
 
 def load_config() -> Config:
@@ -57,6 +64,10 @@ def load_config() -> Config:
     asana_project_gid = _get_env("LANTERN_ASANA_PROJECT_GID")
     asana_user_gid = _get_env("LANTERN_ASANA_USER_GID")
     asana_limit = _get_env_int("LANTERN_ASANA_LIMIT", 200)
+    asana_completed_lookback_days = _get_env_int("LANTERN_ASANA_COMPLETED_LOOKBACK_DAYS", 7)
+    asana_excluded_section_gids = _split_csv(
+        os.getenv("LANTERN_ASANA_EXCLUDED_SECTION_GIDS")
+    )
 
 
     if chroma_dir is not None:
@@ -74,4 +85,6 @@ def load_config() -> Config:
         asana_project_gid=asana_project_gid,
         asana_user_gid=asana_user_gid,
         asana_limit=asana_limit,
+        asana_completed_lookback_days=asana_completed_lookback_days,
+        asana_excluded_section_gids=excluded_section_gids,
     )
