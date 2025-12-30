@@ -21,6 +21,7 @@ class Config:
     asana_user_gid: str | None
     asana_limit: int
     asana_completed_lookback_days: int
+    excluded_section_gids: list[str]
 
 
 def _get_env(name: str, default: str | None = None) -> str | None:
@@ -65,7 +66,7 @@ def load_config() -> Config:
     asana_user_gid = _get_env("LANTERN_ASANA_USER_GID")
     asana_limit = _get_env_int("LANTERN_ASANA_LIMIT", 200)
     asana_completed_lookback_days = _get_env_int("LANTERN_ASANA_COMPLETED_LOOKBACK_DAYS", 7)
-    asana_excluded_section_gids = _split_csv(
+    excluded_section_gids = _split_csv(
         os.getenv("LANTERN_ASANA_EXCLUDED_SECTION_GIDS")
     )
 
@@ -86,5 +87,5 @@ def load_config() -> Config:
         asana_user_gid=asana_user_gid,
         asana_limit=asana_limit,
         asana_completed_lookback_days=asana_completed_lookback_days,
-        asana_excluded_section_gids=excluded_section_gids,
+        excluded_section_gids=excluded_section_gids,
     )
