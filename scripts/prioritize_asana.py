@@ -31,6 +31,8 @@ def _parse_iso_date(value: Any) -> Optional[date]:
 def _parse_float(value: Any) -> Optional[float]:
     if value is None or value == "":
         return None
+    if isinstance(value, str) and value.strip().lower() in {"none", "null", "nan"}:
+        return None
     try:
         return float(value)
     except (TypeError, ValueError):
@@ -110,6 +112,16 @@ def _fetch_all_asana_docs(config, batch_size: int = 1000) -> List[Dict[str, Any]
 
 
 
+def _is_effectively_empty(value: Any) -> bool:
+    if value in (None, ""):
+        return True
+    if isinstance(value, (list, dict)) and len(value) == 0:
+        return True
+    if isinstance(value, str) and value.strip().lower() in {"none", "null", "nan"}:
+        return True
+    return False
+
+
 def _dedupe_by_task_gid(docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Collapse chunk-level records into one record per Asana task.
 
@@ -133,7 +145,7 @@ def _dedupe_by_task_gid(docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         for k, v in md.items():
             if v is None:
                 continue
-            if k not in ex_md or ex_md.get(k) in (None, "", [], {}):
+            if (k not in ex_md) or _is_effectively_empty(ex_md.get(k)):
                 ex_md[k] = v
         existing["metadata"] = ex_md
 
