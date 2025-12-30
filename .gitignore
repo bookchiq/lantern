@@ -27,6 +27,7 @@ data/docs/
 
 # ---- Logs / runtime ----
 *.log
+debug.csv
 
 # ---- Test / coverage ----
 .pytest_cache/
